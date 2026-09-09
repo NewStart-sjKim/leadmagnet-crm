@@ -1,0 +1,30 @@
+{
+  "name": "leadmagnet-crm",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "db:migrate": "pnpm --filter @leadmagnet/db migrate:dev",
+    "db:deploy": "pnpm --filter @leadmagnet/db migrate:deploy",
+    "db:seed": "pnpm --filter @leadmagnet/db seed",
+    "db:generate": "pnpm --filter @leadmagnet/db generate"
+  },
+  "devDependencies": {
+    "turbo": "^2.10.12",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
+  }
+}
