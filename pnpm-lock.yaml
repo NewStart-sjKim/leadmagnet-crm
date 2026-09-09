@@ -41,6 +41,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.3
+      dotenv:
+        specifier: ^17.2.4
+        version: 17.4.2
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.2(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))(postgres@3.4.9)(prisma@6.19.3(typescript@5.9.3))
@@ -90,6 +93,9 @@ importers:
       '@leadmagnet/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      dotenv:
+        specifier: ^17.2.4
+        version: 17.4.2
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.2(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))(postgres@3.4.9)(prisma@6.19.3(typescript@5.9.3))

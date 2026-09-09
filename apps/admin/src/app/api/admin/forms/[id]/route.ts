@@ -1,18 +1,8 @@
 import { z } from "zod";
-import { db, forms, campaigns, eq, and } from "@leadmagnet/db";
-import { ApiError, handler, json, parseJson, requireOperator, type RouteCtx } from "@/lib/api";
+import { db, forms, eq } from "@leadmagnet/db";
+import { handler, json, parseJson, requireOperator, type RouteCtx } from "@/lib/api";
+import { findOwnedForm } from "@/lib/forms";
 import { publicFormUrl } from "@/lib/env";
-
-export async function findOwnedForm(id: string, operatorId: string) {
-  const [row] = await db
-    .select({ form: forms })
-    .from(forms)
-    .innerJoin(campaigns, eq(campaigns.id, forms.campaignId))
-    .where(and(eq(forms.id, id), eq(campaigns.operatorId, operatorId)))
-    .limit(1);
-  if (!row) throw new ApiError(404, "폼을 찾을 수 없습니다");
-  return row.form;
-}
 
 /** GET /api/admin/forms/:id — 폼 상세 + 링크 */
 export const GET = handler(async (req, { params }: RouteCtx<{ id: string }>) => {

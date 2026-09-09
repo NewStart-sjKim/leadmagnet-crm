@@ -7,13 +7,13 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test && playwright test",
+    "test": "turbo run test --concurrency=1 && playwright test",
     "test:e2e": "playwright test",
     "db:migrate": "pnpm --filter @leadmagnet/db migrate:dev",
     "db:deploy": "pnpm --filter @leadmagnet/db migrate:deploy",
     "db:seed": "pnpm --filter @leadmagnet/db seed",
     "db:generate": "pnpm --filter @leadmagnet/db generate",
-    "test:unit": "turbo run test"
+    "test:unit": "turbo run test --concurrency=1"
   },
   "devDependencies": {
     "@playwright/test": "1.56.0",

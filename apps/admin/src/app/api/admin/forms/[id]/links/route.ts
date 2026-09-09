@@ -3,7 +3,7 @@ import { createLinkSchema, CHANNEL_PREFIX } from "@leadmagnet/shared";
 import { handler, json, parseJson, requireOperator, type RouteCtx } from "@/lib/api";
 import { shortId } from "@/lib/ids";
 import { publicFormUrl } from "@/lib/env";
-import { findOwnedForm } from "../route";
+import { findOwnedForm } from "@/lib/forms";
 
 /** GET /api/admin/forms/:id/links — 채널별 배포 링크 목록 */
 export const GET = handler(async (req, { params }: RouteCtx<{ id: string }>) => {

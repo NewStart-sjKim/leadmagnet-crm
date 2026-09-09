@@ -19,7 +19,8 @@
     "zod": "^3.25.76",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.45.1",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.7",
+    "dotenv": "^17.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
