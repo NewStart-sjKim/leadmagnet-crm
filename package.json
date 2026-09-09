@@ -15,6 +15,7 @@
     "db:generate": "pnpm --filter @leadmagnet/db generate"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.0",
     "turbo": "^2.10.12",
     "typescript": "^5.9.3"
   },

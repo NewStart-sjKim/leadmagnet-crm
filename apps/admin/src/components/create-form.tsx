@@ -47,7 +47,7 @@ export function CreateForm({ campaignId, templates }: { campaignId: string; temp
         <input id="f-success" className="input" placeholder="신청이 완료되었습니다. 감사합니다!" value={successMessage} onChange={(e) => setSuccessMessage(e.target.value)} />
       </div>
       {err && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
-      <button className="btn-primary w-full" disabled={busy || templates.length === 0}>{busy ? "생성 중…" : "폼 만들기"}</button>
+      <button type="submit" className="btn-primary w-full" disabled={busy || templates.length === 0}>{busy ? "생성 중…" : "폼 만들기"}</button>
     </form>
   );
 }

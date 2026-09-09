@@ -42,7 +42,7 @@ export function TemplateUpload() {
         <p className="mt-1 text-xs text-neutral-500">단일 파일, 512KB 이하. 제출 처리는 시스템이 자동으로 연결합니다.</p>
       </div>
       {msg && <p className={`rounded-lg px-3 py-2 text-sm ${msg.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`} role="status">{msg.text}</p>}
-      <button className="btn-primary w-full" disabled={loading}>{loading ? "등록 중…" : "등록"}</button>
+      <button type="submit" className="btn-primary w-full" disabled={loading}>{loading ? "등록 중…" : "등록"}</button>
     </form>
   );
 }

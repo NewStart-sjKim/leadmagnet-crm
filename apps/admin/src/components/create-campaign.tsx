@@ -38,7 +38,7 @@ export function CreateCampaign() {
         <textarea id="c-desc" className="input" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
       {err && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{err}</p>}
-      <button className="btn-primary w-full" disabled={busy}>{busy ? "생성 중…" : "캠페인 만들기"}</button>
+      <button type="submit" className="btn-primary w-full" disabled={busy}>{busy ? "생성 중…" : "캠페인 만들기"}</button>
     </form>
   );
 }
