@@ -8,9 +8,21 @@ importers:
 
   .:
     devDependencies:
+      '@leadmagnet/db':
+        specifier: workspace:*
+        version: link:packages/db
       '@playwright/test':
         specifier: 1.56.0
         version: 1.56.0
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.3
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.2(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))(postgres@3.4.9)(prisma@6.19.3(typescript@5.9.3))
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.9
       turbo:
         specifier: ^2.10.12
         version: 2.10.12
@@ -153,6 +165,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@22.20.1)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.13)
 
 packages:
 

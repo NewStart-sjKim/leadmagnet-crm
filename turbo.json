@@ -1,30 +1,48 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".env"],
-  "globalEnv": ["DATABASE_URL", "SESSION_SECRET", "ADMIN_ORIGIN", "FORMS_ORIGIN", "NODE_ENV", "CI"],
+  "globalDependencies": [
+    ".env"
+  ],
+  "globalEnv": [
+    "DATABASE_URL",
+    "SESSION_SECRET",
+    "ADMIN_ORIGIN",
+    "FORMS_ORIGIN",
+    "NODE_ENV",
+    "CI"
+  ],
   "tasks": {
     "generate": {
       "cache": false
     },
     "build": {
-      "dependsOn": ["^build", "^generate"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "dependsOn": [
+        "^build",
+        "^generate"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**"
+      ]
     },
     "dev": {
-      "dependsOn": ["^generate"],
+      "dependsOn": [
+        "^generate"
+      ],
       "cache": false,
       "persistent": true
     },
     "lint": {},
     "typecheck": {
-      "dependsOn": ["^generate"]
+      "dependsOn": [
+        "^generate"
+      ]
     },
     "test": {
-      "dependsOn": ["^generate"],
-      "cache": false
-    },
-    "test:e2e": {
-      "dependsOn": ["^generate"],
+      "dependsOn": [
+        "^generate"
+      ],
       "cache": false
     }
   }

@@ -7,17 +7,22 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e",
+    "test": "turbo run test && playwright test",
+    "test:e2e": "playwright test",
     "db:migrate": "pnpm --filter @leadmagnet/db migrate:dev",
     "db:deploy": "pnpm --filter @leadmagnet/db migrate:deploy",
     "db:seed": "pnpm --filter @leadmagnet/db seed",
-    "db:generate": "pnpm --filter @leadmagnet/db generate"
+    "db:generate": "pnpm --filter @leadmagnet/db generate",
+    "test:unit": "turbo run test"
   },
   "devDependencies": {
     "@playwright/test": "1.56.0",
     "turbo": "^2.10.12",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@leadmagnet/db": "workspace:*",
+    "bcryptjs": "^3.0.2",
+    "postgres": "^3.4.7",
+    "drizzle-orm": "^0.45.1"
   },
   "engines": {
     "node": ">=20"
