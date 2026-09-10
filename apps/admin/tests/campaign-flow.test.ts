@@ -7,6 +7,7 @@ import { GET as getCampaign, PATCH as patchCampaign, DELETE as deleteCampaign } 
 import { POST as createForm } from "@/app/api/admin/forms/route";
 import { GET as getForm, PATCH as patchForm } from "@/app/api/admin/forms/[id]/route";
 import { POST as createLink, GET as listLinks } from "@/app/api/admin/forms/[id]/links/route";
+import { DELETE as deleteLink } from "@/app/api/admin/forms/[id]/links/[linkId]/route";
 import { GET as campaignStats } from "@/app/api/admin/stats/campaigns/route";
 import { GET as channelStats } from "@/app/api/admin/stats/channels/route";
 import { GET as listLeads } from "@/app/api/admin/leads/route";
@@ -220,5 +221,56 @@ describe("CRM 명단 검색 · CSV 내보내기", () => {
     const oc = await loginAs(other.email, other.password);
     const text = await (await listLeads(req("/api/admin/leads?format=csv", { cookie: oc }), undefined as never)).text();
     expect(text.trimEnd().split("\r\n")).toHaveLength(1); // 헤더만 (text() 가 BOM 을 제거함)
+  });
+});
+
+describe("배포 링크 삭제", () => {
+  beforeEach(truncateAll);
+
+  async function setupLink() {
+    const { cookie, tpl, camp } = await setup();
+    const { form } = await (await createForm(jsonReq("/api/admin/forms", { campaignId: camp.id, templateId: tpl.id, title: "폼" }, { cookie }), undefined as never)).json();
+    const mk = async (label: string) =>
+      (await (await createLink(jsonReq(`/api/admin/forms/${form.id}/links`, { channel: "INSTAGRAM", label }, { cookie }), ctx({ id: form.id }))).json()).link;
+    return { cookie, form, mk };
+  }
+
+  it("트래픽이 없는 링크는 삭제된다", async () => {
+    const { cookie, form, mk } = await setupLink();
+    const keep = await mk("프로필");
+    const drop = await mk("잘못 만듦");
+
+    const res = await deleteLink(req(`/api/admin/forms/${form.id}/links/${drop.id}`, { method: "DELETE", cookie }), ctx({ id: form.id, linkId: drop.id }));
+    expect(res.status).toBe(200);
+
+    const { links } = await (await listLinks(req(`/api/admin/forms/${form.id}/links`, { cookie }), ctx({ id: form.id }))).json();
+    expect(links.map((l: { id: string }) => l.id)).toEqual([keep.id]);
+  });
+
+  it("방문·신청이 기록된 링크는 409 로 거부한다 (삭제하면 성과가 DIRECT 로 왜곡되므로)", async () => {
+    const { cookie, form, mk } = await setupLink();
+    const used = await mk("스토리");
+    await db.insert(visits).values({ formId: form.id, linkId: used.id, visitorId: "A" });
+    await db.insert(leads).values({ formId: form.id, linkId: used.id, visitorId: "A", payload: { name: "a" } });
+
+    const res = await deleteLink(req(`/api/admin/forms/${form.id}/links/${used.id}`, { method: "DELETE", cookie }), ctx({ id: form.id, linkId: used.id }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toMatch(/방문 1건 · 신청 1건/);
+
+    // 링크와 성과가 모두 그대로 남아 있어야 한다
+    const { links } = await (await listLinks(req(`/api/admin/forms/${form.id}/links`, { cookie }), ctx({ id: form.id }))).json();
+    expect(links).toHaveLength(1);
+    const ch = await (await channelStats(req(`/api/admin/stats/channels?formId=${form.id}`, { cookie }), undefined as never)).json();
+    expect(ch.channels.find((c: { channel: string }) => c.channel === "INSTAGRAM")).toMatchObject({ visits: 1, leads: 1 });
+  });
+
+  it("다른 운영자의 링크는 삭제할 수 없다 (404)", async () => {
+    const { form, mk } = await setupLink();
+    const link = await mk("프로필");
+    const other = await createOperator("other@test.dev");
+    const oc = await loginAs(other.email, other.password);
+
+    const res = await deleteLink(req(`/api/admin/forms/${form.id}/links/${link.id}`, { method: "DELETE", cookie: oc }), ctx({ id: form.id, linkId: link.id }));
+    expect(res.status).toBe(404);
   });
 });

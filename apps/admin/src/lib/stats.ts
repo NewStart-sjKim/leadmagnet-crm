@@ -1,4 +1,4 @@
-import { db, campaigns, forms, visits, leads, distributionLinks, eq, and, count, countDistinct, sql } from "@leadmagnet/db";
+import { db, campaigns, forms, visits, leads, distributionLinks, eq, and, count, countDistinct, isNotNull, sql } from "@leadmagnet/db";
 import type { ChannelValue } from "@leadmagnet/shared";
 
 /**
@@ -127,5 +127,34 @@ export async function formStats(campaignId: string) {
   const out = new Map<string, Metrics>();
   for (const r of v) out.set(r.formId, { visits: r.visits, visitors: r.visitors, leads: lm.get(r.formId) ?? 0, conversionRate: rate(lm.get(r.formId) ?? 0, r.visitors) });
   for (const [formId, n] of lm) if (!out.has(formId)) out.set(formId, { visits: 0, visitors: 0, leads: n, conversionRate: 0 });
+  return out;
+}
+
+/**
+ * 링크 단위 성과 (캠페인 상세의 배포 링크 목록용).
+ * 같은 채널에 여러 링크를 만드는 이유가 여기에 있다 — 프로필/스토리처럼 붙인 위치별로 성과를 비교한다.
+ */
+export async function linkStats(campaignId: string) {
+  const v = await db
+    .select({ linkId: visits.linkId, visits: count(visits.id), visitors: countDistinct(visits.visitorId) })
+    .from(visits)
+    .innerJoin(forms, eq(forms.id, visits.formId))
+    .where(and(eq(forms.campaignId, campaignId), isNotNull(visits.linkId)))
+    .groupBy(visits.linkId);
+  const l = await db
+    .select({ linkId: leads.linkId, leads: count(leads.id) })
+    .from(leads)
+    .innerJoin(forms, eq(forms.id, leads.formId))
+    .where(and(eq(forms.campaignId, campaignId), isNotNull(leads.linkId)))
+    .groupBy(leads.linkId);
+
+  const lm = new Map(l.map((r) => [r.linkId!, r.leads]));
+  const out = new Map<string, Metrics>();
+  for (const r of v) {
+    const n = lm.get(r.linkId!) ?? 0;
+    out.set(r.linkId!, { visits: r.visits, visitors: r.visitors, leads: n, conversionRate: rate(n, r.visitors) });
+  }
+  // 방문 없이 신청만 기록된 경우(쿠키 차단 등)도 빠뜨리지 않는다
+  for (const [linkId, n] of lm) if (!out.has(linkId)) out.set(linkId, { visits: 0, visitors: 0, leads: n, conversionRate: 0 });
   return out;
 }

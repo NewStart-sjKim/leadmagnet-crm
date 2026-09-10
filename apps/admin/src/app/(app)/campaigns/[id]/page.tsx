@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, campaigns, htmlTemplates, eq, and, desc } from "@leadmagnet/db";
 import { getCurrentOperator } from "@/lib/session";
-import { campaignStats, channelStats, formStats } from "@/lib/stats";
+import { campaignStats, channelStats, formStats, linkStats } from "@/lib/stats";
 import { publicFormUrl, env } from "@/lib/env";
 import { PageHeader, StatTiles, Empty } from "@/components/ui";
 import { ChannelTable } from "@/components/channel-table";
@@ -20,10 +20,11 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
   const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, id), eq(campaigns.operatorId, op.id))).limit(1);
   if (!campaign) notFound();
 
-  const [stats, ch, fs, formRows, templates, leadPage] = await Promise.all([
+  const [stats, ch, fs, ls, formRows, templates, leadPage] = await Promise.all([
     campaignStats(op.id).then((all) => all.find((c) => c.campaignId === id)!),
     channelStats(op.id, { campaignId: id }),
     formStats(id),
+    linkStats(id),
     db.query.forms.findMany({ where: (f, { eq }) => eq(f.campaignId, id), with: { links: true }, orderBy: (f, { desc }) => desc(f.createdAt) }),
     db.select({ id: htmlTemplates.id, name: htmlTemplates.name }).from(htmlTemplates).where(eq(htmlTemplates.operatorId, op.id)).orderBy(desc(htmlTemplates.createdAt)),
     fetchLeads(op.id, { campaignId: id, page: 1, pageSize: 20 }),
@@ -47,7 +48,7 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
                 <FormCard
                   key={f.id}
                   form={{ id: f.id, slug: f.slug, title: f.title, isActive: f.isActive, publicUrl: publicFormUrl(f.slug), previewUrl: `${env.formsOrigin}/p/${f.slug}` }}
-                  links={f.links.map((l) => ({ ...l, url: publicFormUrl(f.slug, l.code) }))}
+                  links={f.links.map((l) => ({ ...l, url: publicFormUrl(f.slug, l.code), metrics: ls.get(l.id) ?? { visits: 0, visitors: 0, leads: 0, conversionRate: 0 } }))}
                   stats={fs.get(f.id) ?? { visits: 0, visitors: 0, leads: 0, conversionRate: 0 }}
                 />
               ))}

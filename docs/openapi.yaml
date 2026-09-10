@@ -570,6 +570,32 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  /api/admin/forms/{id}/links/{linkId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string }, description: 폼 id }
+      - { name: linkId, in: path, required: true, schema: { type: string }, description: 배포 링크 id }
+    delete:
+      tags: [배포 링크]
+      summary: 배포 링크 삭제 (트래픽이 없는 링크만)
+      description: |
+        `visits.link_id` / `leads.link_id` 는 `on delete set null` 이라, 방문·신청이 기록된 링크를
+        지우면 그 트래픽이 조용히 **DIRECT** 로 재분류되어 채널별 성과가 왜곡됩니다.
+        그래서 이미 트래픽이 있는 링크는 `409` 로 거부하고, 잘못 만든 빈 링크만 정리할 수 있게 합니다.
+      security: [{ sessionCookie: [] }]
+      responses:
+        "200":
+          description: 삭제됨
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: 방문·신청이 기록된 링크
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example: { error: "방문 12건 · 신청 3건이 기록된 링크입니다. 삭제하면 성과가 직접 유입으로 바뀌어 지울 수 없습니다" }
+
   # ───────────────────────────── 성과 ─────────────────────────────
   /api/admin/stats/campaigns:
     get:
