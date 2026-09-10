@@ -168,3 +168,57 @@ describe("성과 집계", () => {
     expect(ll.total).toBe(0);
   });
 });
+
+describe("CRM 명단 검색 · CSV 내보내기", () => {
+  beforeEach(truncateAll);
+
+  async function seedLeads() {
+    const { cookie, tpl, camp } = await setup();
+    const { form } = await (await createForm(jsonReq("/api/admin/forms", { campaignId: camp.id, templateId: tpl.id, title: "폼" }, { cookie }), undefined as never)).json();
+    const ig = (await (await createLink(jsonReq(`/api/admin/forms/${form.id}/links`, { channel: "INSTAGRAM", label: "프로필" }, { cookie }), ctx({ id: form.id }))).json()).link;
+    await db.insert(leads).values([
+      { formId: form.id, linkId: ig.id, visitorId: "A", name: "김철수", email: "chul@example.com", phone: "010-1111-2222", payload: { name: "김철수", email: "chul@example.com", phone: "010-1111-2222", job: "마케터" } },
+      { formId: form.id, linkId: null, visitorId: "B", name: "Lee, Young", email: "YOUNG@example.com", phone: null, payload: { name: "Lee, Young", email: "YOUNG@example.com", memo: '=HYPERLINK("x")' } },
+    ]);
+    return { cookie, camp, form };
+  }
+
+  it("q 로 이름·이메일·연락처를 대소문자 구분 없이 부분 검색한다", async () => {
+    const { cookie } = await seedLeads();
+    const find = async (q: string) =>
+      (await (await listLeads(req(`/api/admin/leads?q=${encodeURIComponent(q)}`, { cookie }), undefined as never)).json()).leads.map((l: { name: string | null }) => l.name);
+    expect(await find("철수")).toEqual(["김철수"]);
+    expect(await find("young@")).toEqual(["Lee, Young"]); // 대소문자 무시
+    expect(await find("1111")).toEqual(["김철수"]); // 연락처
+    expect(await find("%")).toEqual([]); // 와일드카드 문자는 리터럴로 취급
+    expect(await find("없는사람")).toEqual([]);
+  });
+
+  it("format=csv 는 BOM 포함 UTF-8 CSV 를 내려주고 셀을 안전하게 이스케이프한다", async () => {
+    const { cookie, camp } = await seedLeads();
+    const res = await listLeads(req(`/api/admin/leads?format=csv&campaignId=${camp.id}`, { cookie }), undefined as never);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/csv");
+    expect(res.headers.get("content-disposition")).toMatch(/^attachment; filename="leads-\d{4}-\d{2}-\d{2}\.csv"$/);
+
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]); // 엑셀 한글 호환 BOM (text() 는 BOM 을 제거하므로 바이트로 확인)
+    const lines = new TextDecoder().decode(bytes).trimEnd().split("\r\n");
+    expect(lines[0]).toBe("신청 시각,캠페인,폼,채널,링크 라벨,이름,이메일,연락처,email,job,memo,name,phone");
+    expect(lines).toHaveLength(3);
+
+    const young = lines.find((l) => l.includes("YOUNG"))!;
+    expect(young).toContain('"Lee, Young"'); // 콤마 → 따옴표로 감싸기
+    expect(young).toContain('\'=HYPERLINK(""x"")'); // 수식 인젝션 방지 + 내부 따옴표 이중화
+    expect(young).toContain(",DIRECT,"); // 링크 없는 신청은 DIRECT
+    expect(lines.find((l) => l.includes("김철수"))).toContain(",INSTAGRAM,프로필,");
+  });
+
+  it("CSV 도 다른 운영자의 명단은 포함하지 않는다", async () => {
+    await seedLeads();
+    const other = await createOperator("other@test.dev");
+    const oc = await loginAs(other.email, other.password);
+    const text = await (await listLeads(req("/api/admin/leads?format=csv", { cookie: oc }), undefined as never)).text();
+    expect(text.trimEnd().split("\r\n")).toHaveLength(1); // 헤더만 (text() 가 BOM 을 제거함)
+  });
+});

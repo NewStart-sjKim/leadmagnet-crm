@@ -23,10 +23,10 @@ info:
     모든 오류는 `{ "error": string, "details"?: object }` 형태입니다.
 
 servers:
-  - url: http://localhost:3000
-    description: admin (로컬)
+  - url: /
+    description: admin — 이 문서를 서빙하는 origin (상대 경로라 배포 도메인에 자동으로 맞음)
   - url: http://localhost:3001
-    description: forms (로컬)
+    description: forms — 서빙 시 FORMS_ORIGIN 으로 치환됨 (아래는 로컬 기본값)
 
 tags:
   - name: 인증
@@ -212,7 +212,7 @@ paths:
                 password: { type: string }
       responses:
         "200":
-          description: 성공. `Set-Cookie: lm_admin_session` 발급
+          description: "성공. `Set-Cookie: lm_admin_session` 발급"
           headers:
             Set-Cookie:
               schema: { type: string }
@@ -613,15 +613,29 @@ paths:
   /api/admin/leads:
     get:
       tags: [CRM 명단]
-      summary: 신청자 명단 (페이지네이션)
+      summary: 신청자 명단 (페이지네이션 · 검색 · CSV 내보내기)
+      description: |
+        `q` 는 이름·이메일·연락처를 대소문자 구분 없이 부분 일치로 검색합니다 (와일드카드 문자는 리터럴로 취급).
+
+        `format=csv` 이면 필터에 맞는 명단 전체(최대 10,000건)를 CSV 파일로 내려줍니다.
+        엑셀 한글 호환을 위해 UTF-8 BOM 을 붙이고, 고정 8개 컬럼 뒤에 응답(payload) 필드가 키 이름순으로 이어집니다.
+        `= + - @` 로 시작하는 값은 앞에 `'` 를 붙여 스프레드시트 수식 인젝션을 막습니다.
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: campaignId, in: query, schema: { type: string } }
         - { name: formId, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 }, description: 이름·이메일·연락처 부분 일치 }
+        - { name: format, in: query, schema: { type: string, enum: [csv] }, description: csv 이면 파일 다운로드 }
         - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
         - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
       responses:
         "200":
+          description: 명단 (JSON) 또는 CSV 파일
+          headers:
+            Content-Disposition:
+              description: format=csv 일 때만
+              schema: { type: string }
+              example: 'attachment; filename="leads-2026-09-10.csv"'
           content:
             application/json:
               schema:
@@ -633,6 +647,11 @@ paths:
                   page: { type: integer }
                   pageSize: { type: integer }
                   total: { type: integer }
+            text/csv:
+              schema: { type: string }
+              example: |
+                신청 시각,캠페인,폼,채널,링크 라벨,이름,이메일,연락처,agree,job
+                2026-09-10 00:33:36,2026 이북 캠페인,이북 다운로드 신청,INSTAGRAM,인스타 프로필 링크,김테스트,test@example.com,010-1234-5678,on,마케터
 
   # ───────────────────────────── 공개 폼 (forms origin) ─────────────────────────────
   /f/{slug}:
