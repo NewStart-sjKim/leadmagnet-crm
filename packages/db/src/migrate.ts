@@ -1,11 +1,11 @@
 import { config } from "dotenv";
-config({ path: new URL("../../../.env", import.meta.url).pathname, quiet: true });
+import { fileURLToPath } from "node:url";
+config({ path: fileURLToPath(new URL("../../../.env", import.meta.url)), quiet: true });
 config({ quiet: true });
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is not set");

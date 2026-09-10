@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-config({ path: new URL("../../../.env", import.meta.url).pathname, quiet: true });
+import { fileURLToPath } from "node:url";
+config({ path: fileURLToPath(new URL("../../../.env", import.meta.url)), quiet: true });
 config({ quiet: true });
 
 // ESM import hoisting을 피하기 위해 env 로드 후 동적 import

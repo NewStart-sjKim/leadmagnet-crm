@@ -1,5 +1,6 @@
 import { config } from "dotenv";
-config({ path: new URL("../../.env", import.meta.url).pathname, quiet: true });
+import { fileURLToPath } from "node:url";
+config({ path: fileURLToPath(new URL("../../.env", import.meta.url)), quiet: true });
 config({ quiet: true });
 import { defineConfig } from "drizzle-kit";
 
