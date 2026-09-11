@@ -30,9 +30,9 @@ export function middleware(req: NextRequest) {
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
-  if (pathname === "/login" && hasCookie) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
+  // /login 은 쿠키가 있어도 여기서 되돌리지 않는다. 쿠키는 있지만 세션이 무효(만료·DB 초기화)일 때
+  // 여기서 /dashboard 로 보내면 (app)/layout 이 다시 /login 으로 보내 무한 이동이 된다.
+  // 이미 로그인된 사용자의 /dashboard 이동은 세션을 실제로 검증하는 login 페이지가 맡는다.
   return NextResponse.next();
 }
 

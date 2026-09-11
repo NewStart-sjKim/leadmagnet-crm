@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentOperator } from "@/lib/session";
+import { requireCurrentOperator } from "@/lib/session";
 import { campaignStats } from "@/lib/stats";
 import { PageHeader, StatusBadge, Empty, pct } from "@/components/ui";
 import { CreateCampaign } from "@/components/create-campaign";
@@ -7,7 +7,7 @@ import { CreateCampaign } from "@/components/create-campaign";
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
-  const op = (await getCurrentOperator())!;
+  const op = await requireCurrentOperator();
   const cs = await campaignStats(op.id);
   return (
     <>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { safeNext } from "@/lib/safe-next";
 
 export function LoginForm({ next }: { next?: string }) {
   const router = useRouter();
@@ -14,19 +15,25 @@ export function LoginForm({ next }: { next?: string }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "로그인에 실패했습니다");
-      return;
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? "로그인에 실패했습니다");
+        return;
+      }
+      router.replace(safeNext(next));
+      router.refresh();
+    } catch {
+      // 네트워크 오류 등 응답 자체를 못 받은 경우 — 버튼을 다시 활성화해야 재시도할 수 있다
+      setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요");
+    } finally {
+      setLoading(false);
     }
-    router.replace(next && next.startsWith("/") ? next : "/dashboard");
-    router.refresh();
   }
 
   return (

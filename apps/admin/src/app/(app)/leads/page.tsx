@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db, campaigns, eq } from "@leadmagnet/db";
-import { getCurrentOperator } from "@/lib/session";
+import { requireCurrentOperator } from "@/lib/session";
 import { fetchLeads } from "@/lib/leads";
 import { PageHeader } from "@/components/ui";
 import { LeadsTable } from "@/components/leads-table";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ campaignId?: string; q?: string; page?: string }> }) {
   const sp = await searchParams;
-  const op = (await getCurrentOperator())!;
+  const op = await requireCurrentOperator();
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const [result, cs] = await Promise.all([
     fetchLeads(op.id, { campaignId: sp.campaignId, q: sp.q, page, pageSize: 50 }),

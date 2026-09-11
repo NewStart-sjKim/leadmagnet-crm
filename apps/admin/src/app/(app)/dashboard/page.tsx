@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentOperator } from "@/lib/session";
+import { requireCurrentOperator } from "@/lib/session";
 import { campaignStats, channelStats } from "@/lib/stats";
 import { PageHeader, StatTiles, StatusBadge, Empty, pct } from "@/components/ui";
 import { ChannelTable } from "@/components/channel-table";
@@ -7,7 +7,7 @@ import { ChannelTable } from "@/components/channel-table";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const op = (await getCurrentOperator())!;
+  const op = await requireCurrentOperator();
   const [cs, ch] = await Promise.all([campaignStats(op.id), channelStats(op.id)]);
   const total = cs.reduce(
     (a, c) => ({ visits: a.visits + c.visits, visitors: a.visitors + c.visitors, leads: a.leads + c.leads, conversionRate: 0 }),

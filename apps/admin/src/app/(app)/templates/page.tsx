@@ -1,5 +1,5 @@
 import { db, htmlTemplates, eq, desc } from "@leadmagnet/db";
-import { getCurrentOperator } from "@/lib/session";
+import { requireCurrentOperator } from "@/lib/session";
 import { PageHeader, Empty, fmtDate } from "@/components/ui";
 import { TemplateUpload } from "@/components/template-upload";
 import { DeleteButton } from "@/components/delete-button";
@@ -7,7 +7,7 @@ import { DeleteButton } from "@/components/delete-button";
 export const dynamic = "force-dynamic";
 
 export default async function TemplatesPage() {
-  const op = (await getCurrentOperator())!;
+  const op = await requireCurrentOperator();
   const rows = await db
     .select({ id: htmlTemplates.id, name: htmlTemplates.name, fileName: htmlTemplates.fileName, sizeBytes: htmlTemplates.sizeBytes, fieldNames: htmlTemplates.fieldNames, createdAt: htmlTemplates.createdAt })
     .from(htmlTemplates)

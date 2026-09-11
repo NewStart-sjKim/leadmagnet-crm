@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, campaigns, htmlTemplates, eq, and, desc } from "@leadmagnet/db";
-import { getCurrentOperator } from "@/lib/session";
+import { requireCurrentOperator } from "@/lib/session";
 import { campaignStats, channelStats, formStats, linkStats } from "@/lib/stats";
 import { publicFormUrl, env } from "@/lib/env";
 import { PageHeader, StatTiles, Empty } from "@/components/ui";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CampaignDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const op = (await getCurrentOperator())!;
+  const op = await requireCurrentOperator();
   const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, id), eq(campaigns.operatorId, op.id))).limit(1);
   if (!campaign) notFound();
 

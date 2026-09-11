@@ -1,7 +1,12 @@
+import { redirect } from "next/navigation";
+import { getCurrentOperator } from "@/lib/session";
 import { LoginForm } from "@/components/login-form";
+import { safeNext } from "@/lib/safe-next";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
+  // 세션이 실제로 유효할 때만 되돌린다. 쿠키만 남은 무효 세션이면 로그인 폼을 보여준다 (미들웨어 주석 참고).
+  if (await getCurrentOperator()) redirect(safeNext(next));
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <div className="card w-full max-w-sm p-8">

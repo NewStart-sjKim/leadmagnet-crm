@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { db, sessions, operators, eq, and, gt, lt } from "@leadmagnet/db";
 
@@ -63,4 +64,15 @@ export function getOperatorFromRequest(req: NextRequest) {
 export async function getCurrentOperator() {
   const store = await cookies();
   return resolveSession(store.get(SESSION_COOKIE)?.value);
+}
+
+/**
+ * 보호된 페이지용. 세션이 없으면 /login 으로 보낸다.
+ * (app)/layout 도 같은 검사를 하지만 Next 는 레이아웃과 페이지를 병렬로 렌더링하므로,
+ * 페이지가 `getCurrentOperator()!` 로 단언하면 무효 쿠키일 때 null 접근 오류가 먼저 로그에 남는다.
+ */
+export async function requireCurrentOperator(): Promise<CurrentOperator> {
+  const op = await getCurrentOperator();
+  if (!op) redirect("/login");
+  return op;
 }
