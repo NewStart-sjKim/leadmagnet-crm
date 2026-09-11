@@ -24,7 +24,6 @@ jobs:
     env:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/leadmagnet_test
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/leadmagnet_test
-      SESSION_SECRET: ci-secret
       ADMIN_ORIGIN: http://localhost:3100
       FORMS_ORIGIN: http://localhost:3101
       CI: "true"
