@@ -10,7 +10,7 @@
 
 ### 요구 사항
 
-- Node.js 20 이상, pnpm 10 (`corepack enable` 또는 `npm i -g pnpm`)
+- Node.js 20 이상, pnpm 10 — `corepack enable` 을 권장합니다 (`package.json` 의 `packageManager` 에 고정된 `pnpm@10.28.0` 을 자동으로 사용). 직접 설치한다면 `npm i -g pnpm@10` (pnpm 11 이상은 락파일 형식이 달라 설치가 실패할 수 있습니다)
 - PostgreSQL 14 이상 (로컬 설치 또는 Docker)
 
 ### 1. 의존성 설치
@@ -22,10 +22,10 @@ pnpm install
 ### 2. 환경 변수
 
 ```bash
-cp .env.example .env
+cp .env.example .env        # Windows cmd 는 copy .env.example .env
 ```
 
-`.env` 의 `DATABASE_URL` 을 사용 중인 PostgreSQL 에 맞게 수정합니다. 나머지 값은 로컬 개발 기본값으로 동작합니다.
+`.env` 의 `DATABASE_URL` 을 사용 중인 PostgreSQL 에 맞게 수정합니다. 나머지 값은 로컬 개발 기본값으로 동작합니다 (세션 서명 비밀키 같은 추가 시크릿은 없습니다).
 
 Docker 로 PostgreSQL 을 띄우는 경우:
 
@@ -64,7 +64,7 @@ pnpm --filter @leadmagnet/admin start   # :3000
 pnpm --filter @leadmagnet/forms start   # :3001
 ```
 
-두 앱은 **서로 다른 origin** 에서 서빙되어야 합니다. `ADMIN_ORIGIN`, `FORMS_ORIGIN` 을 실제 도메인으로 설정하세요. Vercel 배포 시 각 앱 디렉터리를 Root Directory 로 하는 프로젝트 2개를 만들고 같은 `DATABASE_URL` 을 주입합니다 (`apps/*/vercel.json` 참고).
+두 앱은 **서로 다른 origin** 에서 서빙되어야 합니다. `ADMIN_ORIGIN`, `FORMS_ORIGIN` 을 실제 도메인으로 설정하세요. Vercel 배포 시 각 앱 디렉터리를 Root Directory 로 하는 프로젝트 2개를 만들고 두 프로젝트에 같은 `DATABASE_URL` · `ADMIN_ORIGIN` · `FORMS_ORIGIN` 을 주입합니다 (`apps/*/vercel.json`, 배포 방식의 결정은 [ADR-0005](docs/adr/0005-stack-and-deployment.md) 참고).
 
 ## 테스트 방법
 
