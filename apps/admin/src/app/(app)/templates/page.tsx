@@ -16,12 +16,11 @@ export default async function TemplatesPage() {
 
   return (
     <>
-      <PageHeader title="HTML 템플릿" description="AI로 만든 단일 .html 신청 폼 파일을 등록합니다. 파일 안에 <form> 요소와 name 속성이 있는 입력 필드가 있어야 합니다." />
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <TemplateUpload />
+      <PageHeader title="HTML 템플릿" description="AI로 만든 단일 .html 신청 폼 파일을 등록합니다. 파일 안에 <form> 요소와 name 속성이 있는 입력 필드가 있어야 합니다." actions={<TemplateUpload />} />
+      <div>
         <div>
           {rows.length === 0 ? (
-            <Empty>등록된 템플릿이 없습니다.</Empty>
+            <Empty>등록된 템플릿이 없습니다. 오른쪽 위 “+ 새 템플릿 등록”으로 시작하세요.</Empty>
           ) : (
             <ul className="space-y-3">
               {rows.map((t) => (

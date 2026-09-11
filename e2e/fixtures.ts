@@ -20,6 +20,7 @@ export const SAMPLE_FORM = path.resolve(__dirname, "../examples/sample-ebook-for
 
 export async function uploadTemplate(admin: Page, filePath: string, name: string) {
   await admin.goto("/templates");
+  await admin.click("[data-testid=open-template-upload]");
   await admin.fill("#tpl-name", name);
   await admin.setInputFiles("#tpl-file", filePath);
   await admin.click('[data-testid=template-upload] button[type=submit]');
@@ -28,9 +29,11 @@ export async function uploadTemplate(admin: Page, filePath: string, name: string
 
 export async function createCampaignWithForm(admin: Page, campaignName: string, formTitle: string) {
   await admin.goto("/campaigns");
+  await admin.click("[data-testid=open-create-campaign]");
   await admin.fill("#c-name", campaignName);
   await admin.click('[data-testid=create-campaign] button[type=submit]');
   await admin.waitForURL(/\/campaigns\/[^/]+$/);
+  await admin.click("[data-testid=open-create-form]");
   await admin.fill("#f-title", formTitle);
   await admin.click('[data-testid=create-form] button[type=submit]');
   await expect(admin.locator("[data-testid=form-card]")).toHaveCount(1);

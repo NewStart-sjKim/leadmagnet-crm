@@ -36,12 +36,14 @@ export default async function CampaignDetail({ params }: { params: Promise<{ id:
       <PageHeader title={campaign.name} description={campaign.description ?? undefined} actions={<CampaignStatusControl id={campaign.id} status={campaign.status} />} />
       <StatTiles m={stats} />
 
-      <section className="mt-8 grid gap-6 lg:grid-cols-[360px_1fr]">
-        <CreateForm campaignId={campaign.id} templates={templates} />
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-neutral-700">신청 폼 · 배포 링크</h2>
+          <CreateForm campaignId={campaign.id} templates={templates} />
+        </div>
         <div>
-          <h2 className="mb-3 text-sm font-semibold text-neutral-700">신청 폼 · 배포 링크</h2>
           {formRows.length === 0 ? (
-            <Empty>{templates.length === 0 ? <>먼저 <Link className="underline" href="/templates">HTML 템플릿</Link>을 등록한 뒤 폼을 만들 수 있습니다.</> : "왼쪽에서 첫 신청 폼을 만들어 보세요."}</Empty>
+            <Empty>{templates.length === 0 ? <>먼저 <Link className="underline" href="/templates">HTML 템플릿</Link>을 등록한 뒤 폼을 만들 수 있습니다.</> : "위 “+ 새 신청 폼”으로 첫 신청 폼을 만들어 보세요."}</Empty>
           ) : (
             <div className="space-y-4">
               {formRows.map((f) => (

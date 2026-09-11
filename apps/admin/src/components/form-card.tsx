@@ -130,13 +130,18 @@ export function FormCard({ form, links, stats }: { form: FormInfo; links: Link[]
         ) : (
           <ul className="divide-y divide-neutral-100 rounded-lg border border-neutral-200">
             {links.map((l) => (
-              <li key={l.id} className="px-3 py-2 text-sm" data-testid="link-item">
+              // 줄 전체에 hover 를 주고, 삭제 버튼 위에서는 빨갛게 바꿔 어느 줄이 지워질지 보이게 한다
+              <li
+                key={l.id}
+                className="px-3 py-2 text-sm transition-colors hover:bg-neutral-50 has-[[data-testid=delete-link]:hover]:bg-red-50"
+                data-testid="link-item"
+              >
                 <div className="flex items-center gap-3">
                   <ChannelBadge channel={l.channel} />
                   {l.label && <span className="text-xs text-neutral-500">{l.label}</span>}
                   <code className="min-w-0 flex-1 truncate text-xs text-neutral-700">{l.url}</code>
-                  <button className="text-xs text-neutral-700 underline" onClick={() => copy(l.url, l.id)}>{copied === l.id ? "복사됨" : "복사"}</button>
-                  <button className="text-xs text-red-600 underline disabled:opacity-50" disabled={busy === l.id} onClick={() => deleteLink(l)} data-testid="delete-link">삭제</button>
+                  <button className="btn-secondary !px-2 !py-1 text-xs" onClick={() => copy(l.url, l.id)}>{copied === l.id ? "복사됨" : "복사"}</button>
+                  <button className="btn-danger !px-2 !py-1 text-xs" disabled={busy === l.id} onClick={() => deleteLink(l)} data-testid="delete-link">삭제</button>
                 </div>
                 <div className="mt-1 flex gap-3 pl-1 text-[11px] tabular-nums text-neutral-500">
                   <span>방문 <b className="text-neutral-700">{l.metrics.visits}</b></span>

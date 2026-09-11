@@ -11,12 +11,11 @@ export default async function CampaignsPage() {
   const cs = await campaignStats(op.id);
   return (
     <>
-      <PageHeader title="캠페인 · 폼" description="캠페인을 만들고, 등록한 템플릿으로 커스텀 신청 폼을 생성해 채널별 링크로 배포합니다." />
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <CreateCampaign />
+      <PageHeader title="캠페인 · 폼" description="캠페인을 만들고, 등록한 템플릿으로 커스텀 신청 폼을 생성해 채널별 링크로 배포합니다." actions={<CreateCampaign />} />
+      <div>
         <div>
           {cs.length === 0 ? (
-            <Empty>캠페인이 없습니다. 왼쪽에서 첫 캠페인을 만들어 보세요.</Empty>
+            <Empty>캠페인이 없습니다. 오른쪽 위 “+ 새 캠페인”으로 첫 캠페인을 만들어 보세요.</Empty>
           ) : (
             <ul className="space-y-3">
               {cs.map((c) => (
