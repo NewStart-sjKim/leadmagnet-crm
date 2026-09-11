@@ -7,8 +7,8 @@ const EXPORT_MAX = 10_000;
 
 function whereFor(operatorId: string, f: LeadFilter) {
   const q = f.q?.trim();
-  // LIKE 와일드카드(% _ \)는 리터럴로 검색되도록 이스케이프
-  const pattern = q ? `%${q.replace(/[\%_]/g, (c) => `\${c}`)}%` : undefined;
+  // LIKE 와일드카드(% _)와 이스케이프 문자 자체는 백슬래시로 이스케이프해 리터럴로 검색한다 (Postgres 기본 escape 문자)
+  const pattern = q ? `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%` : undefined;
   return and(
     eq(campaigns.operatorId, operatorId),
     f.campaignId ? eq(forms.campaignId, f.campaignId) : undefined,

@@ -195,6 +195,18 @@ describe("CRM 명단 검색 · CSV 내보내기", () => {
     expect(await find("없는사람")).toEqual([]);
   });
 
+  it("밑줄(_)이 든 이메일도 검색된다 — _ 는 LIKE 와일드카드가 아니라 글자로 취급", async () => {
+    const { cookie, form } = await seedLeads();
+    await db.insert(leads).values([
+      { formId: form.id, linkId: null, visitorId: "C", name: "밑줄", email: "under_score@example.com", phone: null, payload: { email: "under_score@example.com" } },
+      { formId: form.id, linkId: null, visitorId: "D", name: "엑스", email: "underXscore@example.com", phone: null, payload: { email: "underXscore@example.com" } },
+    ]);
+    const find = async (q: string) =>
+      (await (await listLeads(req(`/api/admin/leads?q=${encodeURIComponent(q)}`, { cookie }), undefined as never)).json()).leads.map((l: { email: string | null }) => l.email);
+    expect(await find("under_score")).toEqual(["under_score@example.com"]); // 이스케이프가 깨지면 [] 가 된다
+    expect(await find("r_s")).toEqual(["under_score@example.com"]); // _ 가 와일드카드였다면 underXscore 도 걸린다
+  });
+
   it("format=csv 는 BOM 포함 UTF-8 CSV 를 내려주고 셀을 안전하게 이스케이프한다", async () => {
     const { cookie, camp } = await seedLeads();
     const res = await listLeads(req(`/api/admin/leads?format=csv&campaignId=${camp.id}`, { cookie }), undefined as never);
