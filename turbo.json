@@ -5,7 +5,6 @@
   ],
   "globalEnv": [
     "DATABASE_URL",
-    "SESSION_SECRET",
     "ADMIN_ORIGIN",
     "FORMS_ORIGIN",
     "NODE_ENV",

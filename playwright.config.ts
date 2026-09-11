@@ -11,7 +11,6 @@ const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL ?? "postgresql://postgre
 const env = {
   ...process.env,
   DATABASE_URL: TEST_DATABASE_URL,
-  SESSION_SECRET: "e2e-secret",
   ADMIN_ORIGIN: ADMIN_URL,
   FORMS_ORIGIN: FORMS_URL,
   NODE_ENV: "development",
