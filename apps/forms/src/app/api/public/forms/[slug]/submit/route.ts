@@ -22,9 +22,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   if (!form) return NextResponse.json({ error: "폼을 찾을 수 없습니다" }, { status: 404 });
   if (!isOpen(form)) return NextResponse.json({ error: "신청이 마감되었습니다" }, { status: 410 });
 
+  // Content-Length 는 청크 전송이면 없을 수 있으므로, 실제로 읽은 본문 크기도 다시 검사한다
+  const text = await req.text();
+  if (Buffer.byteLength(text) > MAX_BODY) return NextResponse.json({ error: "요청이 너무 큽니다" }, { status: 413 });
   let raw: unknown;
   try {
-    raw = await req.json();
+    raw = JSON.parse(text);
   } catch {
     return NextResponse.json({ error: "JSON 본문이 필요합니다" }, { status: 400 });
   }

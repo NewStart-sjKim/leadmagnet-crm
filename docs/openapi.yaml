@@ -1014,7 +1014,7 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
               example: { error: "신청이 마감되었습니다" }
         "413":
-          description: 본문 64KB 초과
+          description: 본문 64KB 초과 (Content-Length 헤더와 실제로 읽은 본문 크기를 모두 검사)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }

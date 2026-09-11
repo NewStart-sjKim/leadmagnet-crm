@@ -153,6 +153,13 @@ describe("제출 (POST /api/public/forms/:slug/submit)", () => {
     expect((await submit(r, ctx(form.slug))).status).toBe(413);
   });
 
+  it("Content-Length 가 없어도(청크 전송) 실제 본문이 64KB 를 넘으면 413", async () => {
+    const { form } = await seedForm();
+    const r = jsonReq(`/api/public/forms/${form.slug}/submit`, { fields: { a: "x".repeat(70 * 1024) } });
+    expect(r.headers.get("content-length")).toBeNull(); // 헤더만 믿으면 우회된다
+    expect((await submit(r, ctx(form.slug))).status).toBe(413);
+  });
+
   it("필드 값 길이 제한(5000자)을 넘으면 400", async () => {
     const { form } = await seedForm();
     expect((await submit(jsonReq(`/api/public/forms/${form.slug}/submit`, { fields: { a: "x".repeat(5001) } }), ctx(form.slug))).status).toBe(400);
