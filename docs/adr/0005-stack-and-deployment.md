@@ -23,7 +23,7 @@ leadmagnet-crm/
 - **Drizzle ORM + postgres.js** — 스키마가 TypeScript 로 정의되고 `drizzle-kit generate` 가 **평문 SQL 마이그레이션**을 만든다(`packages/db/drizzle/0000_init.sql`). 제출물 "DB 스키마와 마이그레이션" 을 사람이 읽을 수 있는 형태로 충족한다. 순수 JS 라 네이티브 바이너리가 없다.
 - **인증은 직접 구현** (bcrypt + DB 세션 + 쿠키). 라이브러리 뒤에 숨기면 ADR-0001 의 쿠키 속성 결정이 코드에서 드러나지 않는다. 운영자 계정은 시드로만 만든다(회원가입 없음, §4).
 - **테스트**: Vitest 로 Route Handler 를 직접 호출(Next 서버 없이 빠름, 테스트 DB `leadmagnet_test`), Playwright 로 두 서버를 띄운 E2E.
-- **배포: Vercel 프로젝트 2개** — 같은 저장소, Root Directory 를 `apps/admin` / `apps/forms` 로 지정. 각 앱의 `vercel.json` 에 `ignoreCommand: npx turbo-ignore` 를 두어 **해당 앱 또는 그 의존 패키지가 바뀐 커밋만** 빌드된다. 마이그레이션은 admin 빌드에서만 실행(`migrate:deploy`)해 경쟁을 피한다. Postgres 는 Neon(Vercel Marketplace) 하나를 두 프로젝트가 공유한다. 두 프로젝트가 서로 다른 `*.vercel.app` 도메인을 받으므로 origin 분리(ADR-0001)가 인프라 수준에서 성립한다(`vercel.app` 은 Public Suffix List 에 있어 `SameSite=Strict` 도 cross-site 로 동작).
+- **배포: Vercel 프로젝트 2개** — 같은 저장소, Root Directory 를 `apps/admin` / `apps/forms` 로 지정. 각 앱의 `vercel.json` 에 `ignoreCommand: npx turbo-ignore` 를 두어 **해당 앱 또는 그 의존 패키지가 바뀐 커밋만** 빌드된다. 마이그레이션은 admin 빌드에서만 실행(`migrate:deploy`)해 경쟁을 피한다. Postgres 는 Neon 하나(풀러 연결, Vercel 함수와 같은 미국 동부 리전)를 두 프로젝트가 공유한다. 두 프로젝트가 서로 다른 `*.vercel.app` 도메인을 받으므로 origin 분리(ADR-0001)가 인프라 수준에서 성립한다(`vercel.app` 은 Public Suffix List 에 있어 `SameSite=Strict` 도 cross-site 로 동작).
 
 ## 대안과 기각 이유
 
@@ -36,3 +36,4 @@ leadmagnet-crm/
 
 - 로컬 개발은 `pnpm dev` 하나로 두 앱이 뜬다. 포트가 다르므로 origin 이 분리된다(단, 로컬의 `localhost:3000/3001` 은 same-site 라 `SameSite=Strict` 만으로는 쿠키가 막히지 않는다 → 미들웨어의 Origin/Sec-Fetch-Site 검사가 로컬에서도 CSRF 를 막는다).
 - 두 앱의 `next.config.ts` 는 거의 동일하다. 공용 설정 패키지로 뽑을 수 있지만 두 개뿐이라 중복을 허용했다.
+- **데모 배포는 Git 연동이 아니라 Vercel CLI 수동 배포다.** Vercel Hobby 플랜은 커밋 작성자가 팀 소유자와 일치해야 배포를 허용하는데, AI 도구가 붙인 `Co-Authored-By` 트레일러를 외부 협업자로 판정해 Git 연동 배포가 막혔다(Pro 결제 유도). 그래서 `git archive` 로 커밋 내용을 그대로 풀어 `vercel deploy --prod` 로 올린다. 위의 `ignoreCommand`(바뀐 앱만 빌드)는 Git 연동으로 전환하면 그대로 동작하며, 그 외 설정(Root Directory, 환경변수, 마이그레이션 시점)은 두 방식이 같다. 세션 서명 비밀키는 없으므로(ADR-0001, 토큰 해시 저장) 필요한 환경변수는 `DATABASE_URL` · `ADMIN_ORIGIN` · `FORMS_ORIGIN` 뿐이다.

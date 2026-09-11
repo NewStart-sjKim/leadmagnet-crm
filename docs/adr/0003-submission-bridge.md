@@ -16,7 +16,7 @@
    <script>window.__LM_FORM__={"slug":"…","code":"ig_…","preview":false,"successMessage":"…"};</script>
    <script src="/lm-bridge.js" defer></script>
    ```
-   설정 JSON 은 `<` 를 `<` 로 이스케이프해 `</script>` 탈출이 불가능하다(테스트 있음).
+   설정 JSON 은 `<` 를 `\u003c` 로 이스케이프해 `</script>` 탈출이 불가능하다(테스트 있음).
 2. `lm-bridge.js` 는 문서의 **첫 `<form>`** 에 `submit` 리스너를 capture 단계로 건다. 브라우저 네이티브 유효성 검사(`required`, `type=email`)가 통과한 뒤에만 `submit` 이 발생하므로 AI 폼의 검증 UX 를 그대로 살린다.
 3. `FormData` 를 `{ name → string | string[] }` 로 평탄화해 `POST /api/public/forms/{slug}/submit` 에 JSON 으로 보낸다. 같은 origin 이므로 CORS 가 필요 없고 CSP `connect-src 'self'` 와도 부합한다.
 4. 성공하면 `<form>` 을 완료 메시지로 교체하고 `lm:submitted` 이벤트를 발행한다(운영자 스크립트가 후처리 가능). 실패하면 폼 아래에 오류를 표시하고 재시도 가능 상태로 되돌린다.
