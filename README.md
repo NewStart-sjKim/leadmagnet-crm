@@ -68,7 +68,9 @@ pnpm --filter @leadmagnet/forms start   # :3001
 
 ## 테스트 방법
 
-테스트는 별도 데이터베이스를 사용합니다. 기본값은 `postgresql://postgres:postgres@localhost:5432/leadmagnet_test` 이며 `TEST_DATABASE_URL` 로 바꿀 수 있습니다. 마이그레이션은 테스트가 시작될 때 자동으로 적용됩니다.
+테스트는 별도 데이터베이스를 사용합니다. 기본값은 `postgresql://postgres:postgres@localhost:5432/leadmagnet_test` 이며 `.env` 또는 셸 환경변수의 `TEST_DATABASE_URL` 로 바꿀 수 있습니다. 마이그레이션은 테스트가 시작될 때 자동으로 적용됩니다.
+
+> **주의:** 테스트는 시작할 때와 각 테스트 전에 이 DB 의 **모든 테이블을 비웁니다(TRUNCATE)**. `TEST_DATABASE_URL` 을 개발용 `leadmagnet` DB 로 지정하지 마세요.
 
 ```bash
 # 단위 + API 통합 테스트 (Vitest) — Route Handler 를 직접 호출
@@ -90,7 +92,13 @@ pnpm --filter @leadmagnet/forms test
 pnpm --filter @leadmagnet/shared test
 ```
 
-E2E 는 `e2e/` 에 있으며 성공 흐름(폼 생성 → 배포 → 신청 → 대시보드 전환 확인)과 실패 흐름(잘못된 로그인, 미인증 리다이렉트, 마감된 폼 410), 그리고 등록된 HTML 이 관리자 API·세션 쿠키에 접근할 수 없음을 실제 브라우저에서 검증합니다.
+E2E 는 `e2e/` 에 있으며 성공 흐름(폼 생성 → 배포 → 신청 → 대시보드 전환 확인)과 실패 흐름(잘못된 로그인, 미인증 리다이렉트, 무효 세션 쿠키, 외부 주소로의 `next` 리다이렉트 차단, 로그인 통신 실패, 마감된 폼 410), 그리고 등록된 HTML 이 관리자 API·세션 쿠키에 접근할 수 없음을 실제 브라우저에서 검증합니다.
+
+테스트 구성 원칙:
+
+- **Vitest** 는 Next 서버 없이 Route Handler 함수를 직접 호출합니다. 각 테스트 파일은 요청 헬퍼(`tests/helpers.ts`)로 `NextRequest` 를 만들고, 상태 코드·응답 본문·DB 에 남은 값을 확인합니다. 인증은 실제 로그인 API 로 발급받은 쿠키를 씁니다.
+- **Playwright** 는 admin(`:3100`)·forms(`:3101`) 두 서버를 서로 다른 origin 으로 띄워, 브라우저 보안 동작(CSP, 쿠키 속성, CSRF)까지 실제로 검증합니다. 테스트끼리 데이터가 섞이지 않도록 순차 실행합니다.
+- 버그를 고칠 때는 **먼저 실패하는 테스트를 추가**한 뒤 수정합니다. 각 실패 흐름 테스트는 해당 버그가 있으면 반드시 실패하도록 작성돼 있습니다.
 
 타입 검사:
 
